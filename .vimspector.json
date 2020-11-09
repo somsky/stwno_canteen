@@ -1,0 +1,12 @@
+{
+  "configurations": {
+    "Python: Run mensa script as main module": {
+      "default": true,
+      "adapter": "debugpy",
+      "configuration": {
+        "request": "launch",
+        "program": "${file}"
+      }
+    }
+  }
+}

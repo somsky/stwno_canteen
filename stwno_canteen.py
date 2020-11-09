@@ -4,6 +4,8 @@ from enum import Enum
 import csv
 import logging
 from typing import List
+import re
+import argparse
 from stwno_constants import Canteen,\
     CANTEENS,\
     CSV_ADDR_FORMAT_STR,\
@@ -19,10 +21,13 @@ from stwno_constants import Canteen,\
     CSV_INDEX_PERSONNEL_PRICE,\
     CSV_INDEX_GUEST_PRICE,\
     CSV_HEADER_LINE_CNT
+
 from csv_converters import convertCSVDate,\
     convertCSVDishName,\
     convertCSVMealType,\
-    convertCSVNutritionType
+    convertCSVNutritionType,\
+    convertCSVIngredientsAndAllergens,\
+    StwnoFoodIngredient
 
 
 class StwnoCanteenPricing():
@@ -36,34 +41,22 @@ class StwnoCanteenPricing():
         self.guestPrice = guestPrice
 
 
-class Ingredient(): # TODO
-    pass
-
-
-class Allergen(): # TODO
-    pass
-
-
 class Dish():
     name: str
-    ingredients: List[Ingredient]
-    allergens: List[Allergen]
+    ingredients: List[StwnoFoodIngredient]
+    allergens: List[StwnoFoodIngredient]
     mealType: MealType
-    price: StwnoCanteenPricing
+    pricing: StwnoCanteenPricing
     servedOn: datetime.date
     nutritionType: NutritionType
 
-    def __init__(self, name: str, servedOn, nutritionType: NutritionType, ingredients, allergens, mealType, price):
+    def __init__(self, name: str, servedOn, nutritionType: NutritionType, ingredients, allergens, mealType, pricing):
         self.name = name
         self.servedOn = servedOn
         self.ingredients = ingredients
         self.allergens = allergens
         self.mealType = mealType
-        self.price = price
-
-
-def deleteCache() -> None:
-    pass  # TODO
+        self.pricing = pricing
 
 
 def queryStwnoMenu(isoWeekNumber: int, canteen: Canteen) -> str:
@@ -74,15 +67,14 @@ def queryStwnoMenu(isoWeekNumber: int, canteen: Canteen) -> str:
     return csvString
 
 
-def getMenu(canteen: Canteen, day: datetime.date, useCache=True) -> List[Dish]:
+def getMenu(canteen: Canteen, day: datetime.date) -> List[Dish]:
     '''
-    Get the menu of a Stwno canteen for a specific day
+    Get the menu of a STWNO canteen for a specific day
 
     Parameters
     -----------
         canteen (Canteen): The canteen to get the menu for
         day (datetime.date): The day of the menu
-        useCache (bool): Whether to cache the menu or delete cached values
 
     Raises
     -------
@@ -107,23 +99,32 @@ def getMenu(canteen: Canteen, day: datetime.date, useCache=True) -> List[Dish]:
     for rawDish in rawMenu:
         servedOn = convertCSVDate(rawDish[CSV_INDEX_DATE])
         dishName = convertCSVDishName(rawDish[CSV_INDEX_MEAL_AND_META])
+        try:
+            ingredients, allergens = convertCSVIngredientsAndAllergens(
+                rawDish[CSV_INDEX_MEAL_AND_META])
+        except:
+            ingredients = allergens = []
         mealType = convertCSVMealType(rawDish[CSV_INDEX_MEAL_TYPE])
-        nutritionType = convertCSVNutritionType(
-            rawDish[CSV_INDEX_NUTRITION_TYPE])
-        studentPrice = float(
-            rawDish[CSV_INDEX_STUDENT_PRICE].replace(',', '.'))
-        personnelPrice = float(
-            rawDish[CSV_INDEX_PERSONNEL_PRICE].replace(',', '.'))
+        nutritionType = convertCSVNutritionType(rawDish[CSV_INDEX_NUTRITION_TYPE])
+        studentPrice = float(rawDish[CSV_INDEX_STUDENT_PRICE].replace(',', '.'))
+        personnelPrice = float(rawDish[CSV_INDEX_PERSONNEL_PRICE].replace(',', '.'))
         guestPrice = float(rawDish[CSV_INDEX_GUEST_PRICE].replace(',', '.'))
         price = StwnoCanteenPricing(studentPrice, personnelPrice, guestPrice)
         dishes.append(Dish(dishName, servedOn, nutritionType,
-                           [], [], mealType, price))
+                           ingredients, allergens, mealType, price))
     dishes = list(filter(lambda dish: dish.servedOn == day, dishes))
     return dishes
 
 
 if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='STWNO canteen API. Main purpose is to be used\
+            as a API in other python scripts, although it supports basic command line functionality.\
+            Calling this module directly makes it possible to display the menu for the current day\
+            for a given canteen.')
+    parser.add_argument('-c', '--canteen', required=True,
+                        help='ID of the canteen to fetch a menu from. The correct identifier can be\
+                        obtained by browsing the stwno website or by looking at the stwno-constants file')
+    args = parser.parse_args()
     menu = getMenu(Canteen.OTH_RGB_CANTEEN_LUNCH, datetime.date.today())
     for item in menu:
-        print(item.name)
-
+        print('{:<60} {:.2f}€'.format(item.name, item.pricing.studentPrice))
