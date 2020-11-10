@@ -6,7 +6,7 @@ import logging
 from typing import List
 import re
 import argparse
-from stwno_constants import Canteen,\
+from .stwno_constants import Canteen,\
     CANTEENS,\
     CSV_ADDR_FORMAT_STR,\
     NutritionType,\
@@ -22,7 +22,7 @@ from stwno_constants import Canteen,\
     CSV_INDEX_GUEST_PRICE,\
     CSV_HEADER_LINE_CNT
 
-from csv_converters import convertCSVDate,\
+from .csv_converters import convertCSVDate,\
     convertCSVDishName,\
     convertCSVMealType,\
     convertCSVNutritionType,\
@@ -115,16 +115,3 @@ def getMenu(canteen: Canteen, day: datetime.date) -> List[Dish]:
     dishes = list(filter(lambda dish: dish.servedOn == day, dishes))
     return dishes
 
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='STWNO canteen API. Main purpose is to be used\
-            as a API in other python scripts, although it supports basic command line functionality.\
-            Calling this module directly makes it possible to display the menu for the current day\
-            for a given canteen.')
-    parser.add_argument('-c', '--canteen', required=True,
-                        help='ID of the canteen to fetch a menu from. The correct identifier can be\
-                        obtained by browsing the stwno website or by looking at the stwno-constants file')
-    args = parser.parse_args()
-    menu = getMenu(Canteen.OTH_RGB_CANTEEN_LUNCH, datetime.date.today())
-    for item in menu:
-        print('{:<60} {:.2f}€'.format(item.name, item.pricing.studentPrice))

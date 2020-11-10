@@ -1,5 +1,5 @@
 import datetime
-from stwno_constants import CSV_MEAL_TYPE_MAP,\
+from .stwno_constants import CSV_MEAL_TYPE_MAP,\
     CSV_NUTRITION_TYPE_MAP,\
     NutritionType,\
     CSV_DATE_FORMAT,\
