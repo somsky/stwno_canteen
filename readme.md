@@ -1,5 +1,7 @@
 
-<div style="text-align:center"><img style="width:30%"src="https://github.com/somsky/stwno_canteen_python/raw/master/logo.png"/></div>
+<p align="center">
+  <img style="width:30%"src="https://github.com/somsky/stwno_canteen_python/raw/master/logo.png"/>
+</p>
 
 STWNO Canteen is a simple python API for querying the menu of the canteens operated by the STWNO (Studentenwerk Niederbayern/Oberpfalz) in Lower Bavaria and Upper Palatinate.
 
