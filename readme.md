@@ -42,7 +42,7 @@ The command line interface allows to fetch the menu for the current day of a giv
 $ python -m stwno_canteen -c <canteen_identifier>
 ```
 
-For a list of available identifiers, check out the Canteens dicionary in the
+For a list of available identifiers, check out the Canteens dictionary in the
 [constants file](https://github.com/somsky/stwno_canteen_python/blob/master/stwno_constants.py).
 
 # Additional Notes
