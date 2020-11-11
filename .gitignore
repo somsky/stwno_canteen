@@ -1,2 +1,5 @@
 __pycache__/
 .vim/
+build/
+dist/
+stwno_canteen.egg-info/
